@@ -157,15 +157,21 @@ static void create_hotbabe_window(void)
   GdkWindowAttr  attr;
   GdkBitmap     *mask;
   GdkScreen *defscrn;
+  GdkRectangle monitor_geometry;
+  gint primary_monitor;
 
   bm.anim.width = gdk_pixbuf_get_width(bm.anim.pixbuf[0]);
   bm.anim.height = gdk_pixbuf_get_height(bm.anim.pixbuf[0]);
   defscrn=gdk_screen_get_default();
+  primary_monitor = gdk_screen_get_primary_monitor(defscrn);
 
   attr.width = bm.anim.width;
   attr.height = bm.anim.height;
   if( bm.x < 0 ) bm.x += 1 + gdk_screen_get_width(defscrn) - attr.width;
   if( bm.y < 0 ) bm.y += 1 + gdk_screen_get_height(defscrn) - attr.height;
+
+  gdk_screen_get_monitor_geometry(defscrn, primary_monitor, &monitor_geometry);
+
   attr.x = bm.x;
   attr.y = bm.y;
   attr.title = "hot-tux";
@@ -199,6 +205,15 @@ static void create_hotbabe_window(void)
   gdk_window_set_back_pixmap(bm.win, pixmap, False);
 
   gdk_window_show(bm.win);
+  //gdk_window_move(bm.win, bm.x, bm.y);
+  
+  if (bm.x >= 0 && bm.y >= 0) {
+        gdk_window_move(bm.win, monitor_geometry.x + bm.x, monitor_geometry.y + bm.y);
+    } else {
+        int center_x = monitor_geometry.x + (monitor_geometry.width - bm.anim.width) / 2;
+        int center_y = monitor_geometry.y + (monitor_geometry.height - bm.anim.height) / 2;
+        gdk_window_move(bm.win, center_x, center_y);
+    }
 
   gc = gdk_gc_new (pixmap);
 #undef MASK
